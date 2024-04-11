@@ -27,7 +27,7 @@ def check_collision(particles, obstacles, R_part, R_obst, arrived) :
                 for k in range(obstacles.shape[1]) :
 
                     dr = particles[i,0,:] - obstacles[j,k,:]
-                    dist = np.sqrt( dr.dot(dr) )
+                    dist = np.sqrt( np.square(dr).sum() )
 
                     if dist < (R_part + R_obst) :
                         versor = dr / dist
@@ -37,7 +37,7 @@ def check_collision(particles, obstacles, R_part, R_obst, arrived) :
                         new_velocity_dir = np.zeros(2)
                         new_velocity_dir[0] = np.cos(theta_scatter) * versor[0] + np.sin(theta_scatter) * versor[1]
                         new_velocity_dir[1] = - np.sin(theta_scatter) * versor[0] + np.cos(theta_scatter) * versor[1]
-                        mod_v = np.sqrt( particles[i,1,:].dot(particles[i,1,:]) )
+                        mod_v = np.sqrt( np.square(particles[i,1,:]).sum() )
                         particles[i,1,:] = new_velocity_dir * mod_v * inelastic_coeff
 
                         # The new position is moved on the surface, to avoid multiple clashes due to inelasticity
