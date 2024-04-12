@@ -50,7 +50,10 @@ for i in range(rows_obst) :
 # Simulation
 dt = 0.003
 t_sample = 15
-traj = []
+traj = []							# Coordinates of all the particles
+replot = []							# List of boolean used to undestand when the histogram in the plot section should be changed
+hist_arrived = []					# Coordinates of the arrived particles
+new_arr = False
 arrived = np.zeros(N_part)			# 0 : not arrived / 1 : arrived
 num_arrived = arrived.sum()			# Number of particles arrived at floor
 actual_arrived = 0					# Actual number of particles used in the progress bar
@@ -71,6 +74,13 @@ with open("data.xyz", "w") as data_file:
 		# Save trajectory every t_sample
 		if s % t_sample == 0 :
 			traj.append( particles[:, 0, :].copy() )
+			if new_arr :
+				hist_arrived.append( np.array([ pos for (i,pos) in enumerate(particles[:,0,0]) if arrived[i] > 0.5 ]) )
+				replot.append(new_arr)
+				new_arr = False
+			else :
+				replot.append(new_arr)
+				hist_arrived.append([])
 		
 		# Write on .xyz file
 		if s % int(t_sample/3) == 0 :
@@ -95,6 +105,7 @@ with open("data.xyz", "w") as data_file:
 			prog_percentage = np.floor(100 * num_arrived / N_part).astype(int)
 			sys.stdout.write("\r" + "Status\t" + "[" + "#" * prog_percentage + "." * (100 - prog_percentage) + "]\t" + f"{prog_percentage}%" + f"  ({actual_arrived} / {N_part})" )
 			actual_arrived = int(num_arrived)
+			new_arr = True
 		
 		s += 1
 
@@ -105,21 +116,29 @@ obstacles = obstacles.reshape((obstacles.shape[0]*obstacles.shape[1], obstacles.
 
 # Plot
 plt.ion()
-fig, ax = plt.subplots(figsize=(20,5))
-ax.set_xlim((left_border, right_border))
-ax.set_ylim((floor, start_y + 1 + 5 * R_part))
+fig, (ax1, ax2) = plt.subplots(2,1,figsize=(20,12))
+ax1.set_xlim((left_border, right_border))
+ax1.set_ylim((floor, start_y + 1 + 5 * R_part))
 colors = [ ( "#" + ''.join([random.choice('0123456789ABCDEF') for _ in range(6)]) ) for i in range(N_part) ]
+bins_hist = [ int(x) for x in range(int(left_border), int(right_border)+1, 2) ]
 
 # Draw obstacles
-ax.scatter(obstacles[:,0], obstacles[:,1], color="red", s= (R_obst * 45)**2 * np.ones(obstacles.shape[0]))
+ax1.scatter(obstacles[:,0], obstacles[:,1], color="red", s= (R_obst * 45)**2 * np.ones(obstacles.shape[0]))
 # Draw circles
-curr = ax.scatter(traj[0][:,0], traj[0][:,1], c=colors, s= (R_part * 45)**2 * np.ones(particles.shape[0]))
+curr = ax1.scatter(traj[0][:,0], traj[0][:,1], c=colors, s= (R_part * 45)**2 * np.ones(particles.shape[0]))
 
 # Redraw only the circles for the various frames
 for k in range(1, len(traj)) :
 
 	curr.remove()
-	curr=ax.scatter(traj[k][:,0], traj[k][:,1], c=colors, s= (R_part * 45)**2 * np.ones(particles.shape[0]))
+	curr=ax1.scatter(traj[k][:,0], traj[k][:,1], c=colors, s= (R_part * 45)**2 * np.ones(particles.shape[0]))
+
+	if replot[k] :
+		ax2.clear()
+		ax2.set_ylabel("Counts")
+		ax2.hist(hist_arrived[k], bins=bins_hist, color = "red", ec="orange", lw=2 )
+		ax2.set_xlim((left_border, right_border))
+		ax2.set_ylim((0, int(N_part/3)))
 
 	fig.canvas.draw()
 	fig.canvas.flush_events()
