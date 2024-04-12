@@ -49,7 +49,7 @@ for i in range(rows_obst) :
 
 # Simulation
 dt = 0.003
-t_sample = 15
+t_sample = 10
 traj = []							# Coordinates of all the particles
 replot = []							# List of boolean used to undestand when the histogram in the plot section should be changed
 hist_arrived = []					# Coordinates of the arrived particles
@@ -140,7 +140,6 @@ for k in range(1, len(traj)) :
 		ax2.set_xlim((left_border, right_border))
 		ax2.set_ylim((0, int(N_part/3)))
 
-	fig.canvas.draw()
 	fig.canvas.flush_events()
 
 plt.ioff()
