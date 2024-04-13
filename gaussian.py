@@ -152,7 +152,7 @@ print("\nCalculating histogram...\n")
 fig,ax = plt.subplots(figsize=(10,10))
 ax.set_xlabel("x")
 ax.set_ylabel("Counts")
-ax.hist(particles[:,0,0], color = "red", ec="orange", lw=2 )
+ax.hist(particles[:,0,0], bins=bins_hist, color = "red", ec="orange", lw=2 )
 ax.set_title(f"Arrival position distribution (N = {N_part})", fontsize=20)
 plt.show()
 
